@@ -14,16 +14,9 @@ secretGenerator:
   - name: audio-memes
     envs:
       - .env.app
-  - name: audio-memes-postgres
-    envs:
-      - .env.db
 
 images:
   - name: registry.gitlab.com/cmongmang/audio-memes
 
 resources:
   - deployment.yaml
-  - db.yaml
-
-replacements:
-  - path: replacements.yaml
