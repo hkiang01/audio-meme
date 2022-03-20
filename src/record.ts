@@ -1,7 +1,7 @@
 // see https://github.com/discordjs/discord.js/blob/72577c4bfd02524a27afb6ff4aebba9301a690d3/packages/voice/examples/recorder/src/createListeningStream.ts
 import { EndBehaviorType } from '@discordjs/voice';
 import { Guild, User, VoiceBasedChannel } from 'discord.js';
-import { Transform } from 'stream';
+import { Transform, TransformOptions } from 'stream';
 import { OpusEncoder } from '@discordjs/opus';
 import { pipeline } from 'node:stream';
 import { FileWriter } from 'wav';
@@ -9,14 +9,14 @@ import { joinVoiceChannel } from '@discordjs/voice';
 
 
 class OpusDecodingStream extends Transform {
-  encoder
+  encoder: OpusEncoder
   
-  constructor(options, encoder) {
+  constructor(options: TransformOptions, encoder: OpusEncoder) {
       super(options)
       this.encoder = encoder
   }
   
-  _transform(data, encoding, callback) {
+  _transform(data: Buffer, encoding, callback: () => void) {
       this.push(this.encoder.decode(data))
       callback()
   }
