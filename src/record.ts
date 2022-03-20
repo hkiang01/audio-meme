@@ -18,10 +18,9 @@ class OpusDecodingStream extends Transform {
       this.push(this.encoder.decode(data))
       callback()
   }
-  
 }
 
-export function record(interaction: CommandInteraction, connection: VoiceConnection, duration: number) {
+export function record(interaction: CommandInteraction, connection: VoiceConnection) {
   const user = interaction.user;
 
   // see https://github.com/discordjs/voice/issues/209#issuecomment-930288577

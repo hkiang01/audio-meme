@@ -16,14 +16,6 @@ const slashCommand = new SlashCommandBuilder()
     subcommand
     .setName("record")
     .setDescription("Record an audio meme")
-    .addIntegerOption(option => 
-      option
-      .setName("durationseconds")
-      .setDescription("How long in seconds to record the meme")
-      .setRequired(true)
-      .setMinValue(1)
-      .setMaxValue(30)
-    )
 );
 
 const rest = new REST({version: '9'}).setToken(DISCORD_BOT_TOKEN);
@@ -41,7 +33,6 @@ client.on('interactionCreate', async interaction => {
     case 'record':
       if (interaction.member instanceof GuildMember && interaction.member.voice.channel) {
         console.log('recording');
-        const duration = interaction.options.getInteger("durationseconds") * 1000;
         const connection = joinVoiceChannel({
           channelId: interaction.member.voice.channel.id,
           guildId: interaction.guild.id,
@@ -49,7 +40,7 @@ client.on('interactionCreate', async interaction => {
           selfMute: true,
           adapterCreator: interaction.guild.voiceAdapterCreator,
         })
-        record(interaction, connection, duration);
+        record(interaction, connection);
       } else {
         await interaction.reply('Join a voice channel and try again');
         return;
