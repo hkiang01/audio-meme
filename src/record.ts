@@ -1,6 +1,6 @@
 // see https://github.com/discordjs/discord.js/blob/72577c4bfd02524a27afb6ff4aebba9301a690d3/packages/voice/examples/recorder/src/createListeningStream.ts
 import { AudioPlayerStatus, createAudioPlayer, createAudioResource, EndBehaviorType } from '@discordjs/voice';
-import { Guild, User, VoiceBasedChannel } from 'discord.js';
+import { CommandInteraction, Guild, User, VoiceBasedChannel } from 'discord.js';
 import { Transform, TransformOptions } from 'stream';
 import { OpusEncoder } from '@discordjs/opus';
 import { pipeline } from 'node:stream';
@@ -64,7 +64,7 @@ export function record(guild: Guild, voiceBasedChannel: VoiceBasedChannel, user:
 	});
 }
 
-export function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, name: string) {
+export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, name: string, interaction: CommandInteraction ) {
   const filename = `./recordings/${guild.id}/${name}.wav`;
   const connection = joinVoiceChannel({
     channelId: voiceBasedChannel.id,
@@ -77,5 +77,8 @@ export function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, name: s
   const player = createAudioPlayer();
   player.play(resource);
   connection.subscribe(player);
-  player.on(AudioPlayerStatus.Idle, () => connection.destroy());
+  player.on(AudioPlayerStatus.Idle, async () => {
+    connection.destroy();
+    await interaction.reply({ephemeral: true, content: `played ${name}`})
+  });
 }
