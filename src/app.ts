@@ -40,7 +40,7 @@ client.on('interactionCreate', async interaction => {
   if (!interaction.isCommand()) return;
   if (interaction.commandName !== 'audiomeme') return;
   if (!interaction.guild) {
-    await interaction.reply('audiomeme only works in gu ild text channels');
+    await interaction.reply('audiomeme only works in guild text channels');
     return;
   }
 
