@@ -4,7 +4,7 @@ import {CLIENT_ID, DISCORD_BOT_TOKEN} from './constants';
 import { REST } from '@discordjs/rest';
 
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { record } from './record';
+import { play, record } from './record';
 import { GuildMember } from 'discord.js';
 
 
@@ -21,7 +21,17 @@ const slashCommand = new SlashCommandBuilder()
       .setDescription("What to name the saved audio meme, used for retrieval")
       .setRequired(true)
     )
-);
+  ).addSubcommand(subCommand =>
+    subCommand
+    .setName("play")
+    .setDescription("Play an audio meme")
+    .addStringOption(option =>
+      option
+      .setName("name")
+      .setDescription("What the saved audio meme was named")
+      .setRequired(true)
+    )
+  );
 
 const rest = new REST({version: '9'}).setToken(DISCORD_BOT_TOKEN);
 
@@ -45,8 +55,16 @@ client.on('interactionCreate', async interaction => {
       }
       await interaction.reply({ephemeral: true, content: 'recording'});
       break;
+    case 'play':
+      if (interaction.member instanceof GuildMember && interaction.member.voice.channel) {
+        const name = interaction.options.getString("name");
+        play(interaction.guild, interaction.member.voice.channel, name);
+      } else {
+        await interaction.reply({ephemeral: true, content: 'Join a voice channel and try again'});
+        return;
+      }
     default:
-      await interaction.reply('Available subcommands: record');
+      await interaction.reply('Available subcommands: record, play');
   }
   return;
 });
