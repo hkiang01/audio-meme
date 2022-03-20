@@ -4,7 +4,7 @@ import {CLIENT_ID, DISCORD_BOT_TOKEN} from './constants';
 import { REST } from '@discordjs/rest';
 
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { play, record } from './audio';
+import { pickRandom, play, record } from './audio';
 import { GuildMember } from 'discord.js';
 
 
@@ -31,6 +31,10 @@ const slashCommand = new SlashCommandBuilder()
       .setDescription("What the saved audio meme was named")
       .setRequired(true)
     )
+  ).addSubcommand(subCommand =>
+    subCommand
+    .setName("random")
+    .setDescription("Play a random audio meme")
   );
 
 const rest = new REST({version: '9'}).setToken(DISCORD_BOT_TOKEN);
@@ -47,6 +51,7 @@ client.on('interactionCreate', async interaction => {
     await interaction.reply({ephemeral: true, content: 'Join a voice channel and try again'});
     return;
   }
+  const guildMember: GuildMember = interaction.member;
 
   let name: string = undefined;
   let err: NodeJS.ErrnoException = undefined;
@@ -54,7 +59,7 @@ client.on('interactionCreate', async interaction => {
     case 'record':
       name = interaction.options.getString("name");
       await interaction.reply(`🔴 recording ${name} from ${interaction.user.username}'s mic`);
-      err = await record(interaction.guild, interaction.member.voice.channel, interaction.user, name);
+      err = await record(interaction.guild, guildMember.voice.channel, interaction.user, name);
       if (err) {
         await interaction.followUp(`❌ Error recording file ${name} - ${err.message}`);
       }
@@ -62,13 +67,25 @@ client.on('interactionCreate', async interaction => {
     case 'play':
       name = interaction.options.getString("name");
       await interaction.reply(`▶ playing ${name}`);
-      err = await play(interaction.guild, interaction.member.voice.channel, name);
+      err = await play(interaction.guild, guildMember.voice.channel, name, undefined);
       if (err) {
         await interaction.followUp(`❌ Error playing ${name} - ${err.message}`);
       }
       break;
+    case 'random':
+      pickRandom(interaction.guild).then( async ([name, err]) => {
+        if (err) {
+          await interaction.followUp(`❌ Error picking random meme - ${err.message}`);
+        }
+        await interaction.reply(`▶ playing ${name}`);
+        err = await play(interaction.guild, guildMember.voice.channel, name, undefined);
+        if (err) {
+          await interaction.followUp(`❌ Error playing ${name} - ${err.message}`);
+        }
+      })
+      break;
     default:
-      await interaction.reply({ephemeral: true, content: 'Available subcommands: record, play'});
+      await interaction.reply({ephemeral: true, content: 'Available subcommands: record, play, random'});
       break;
   }
   return;

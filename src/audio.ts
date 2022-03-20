@@ -7,7 +7,8 @@ import { pipeline } from 'node:stream';
 import { FileWriter } from 'wav';
 import { joinVoiceChannel } from '@discordjs/voice';
 import fs from 'fs';
-
+import glob from 'glob';
+import path from 'path';
 
 class OpusDecodingStream extends Transform {
   encoder: OpusEncoder
@@ -21,6 +22,21 @@ class OpusDecodingStream extends Transform {
       this.push(this.encoder.decode(data))
       callback()
   }
+}
+
+export async function pickRandom(guild: Guild): Promise<[string, Error]> {
+  return new Promise<[string,Error]>((resolve) => {
+    glob(`./recordings/${guild.id}/*.wav`, (err: Error, files: string[]) => {
+      if (err) {
+        resolve([undefined, err])
+      }
+      const randIdx = Math.floor(Math.random() * files.length);
+      const randFilePath = files[randIdx];
+      // ./recordings/123456789/name.wav -> name
+      const randName = path.basename(randFilePath).slice(0,-4);
+      resolve([randName, undefined])
+    })
+  })
 }
 
 export async function record(guild: Guild, voiceBasedChannel: VoiceBasedChannel, user: User, name: string): Promise<NodeJS.ErrnoException> {
@@ -62,8 +78,12 @@ export async function record(guild: Guild, voiceBasedChannel: VoiceBasedChannel,
   })
 }
 
-export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, name: string): Promise<NodeJS.ErrnoException> {
-  const filename = `./recordings/${guild.id}/${name}.wav`;
+export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, name: string, file: string): Promise<Error> {
+  let filename = undefined;
+  if (file) filename = file;
+  else if (name) filename = `./recordings/${guild.id}/${name}.wav`;
+  else return new Promise((resolve) => resolve(new Error("Must specify either name or file")))
+
   const connection = joinVoiceChannel({
     channelId: voiceBasedChannel.id,
     guildId: guild.id,
@@ -75,7 +95,7 @@ export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, n
   const player = createAudioPlayer();
   player.play(resource);
   connection.subscribe(player);
-  return new Promise<NodeJS.ErrnoException>((resolve) => {
+  return new Promise<Error>((resolve) => {
     player.on(AudioPlayerStatus.Idle, async () => {
       connection.destroy();
       resolve(undefined);
