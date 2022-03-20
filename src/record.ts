@@ -1,10 +1,12 @@
 // see https://github.com/discordjs/discord.js/blob/72577c4bfd02524a27afb6ff4aebba9301a690d3/packages/voice/examples/recorder/src/createListeningStream.ts
-import { EndBehaviorType, VoiceConnection } from '@discordjs/voice';
+import { EndBehaviorType } from '@discordjs/voice';
 import { CommandInteraction } from 'discord.js';
 import { Transform } from 'stream';
 import { OpusEncoder } from '@discordjs/opus';
 import { pipeline } from 'node:stream';
 import { FileWriter } from 'wav';
+import { joinVoiceChannel } from '@discordjs/voice';
+
 
 class OpusDecodingStream extends Transform {
   encoder
@@ -20,16 +22,22 @@ class OpusDecodingStream extends Transform {
   }
 }
 
-export function record(interaction: CommandInteraction, connection: VoiceConnection) {
-  const user = interaction.user;
-
+export function record(interaction: CommandInteraction, channelId: string, guildId: string) {
   // see https://github.com/discordjs/voice/issues/209#issuecomment-930288577
   // see https://github.com/Yvtq8K3n/BobbyMcLovin/blob/742d041f5d3bd621628681c9ded0d7acde096c24/index.js#L42
   // A Readable object mode stream of Opus packets
   // Will only end when the voice connection is destroyed
+  const user = interaction.user;
   const filename = `./recordings/${Date.now()}-${user.username}-${user.discriminator}.wav`;
   const encoder = new OpusEncoder(16000, 1)
 
+  const connection = joinVoiceChannel({
+    channelId: channelId,
+    guildId: guildId,
+    selfDeaf: false,
+    selfMute: true,
+    adapterCreator: interaction.guild.voiceAdapterCreator,
+  })
   const opusStream = connection.receiver.subscribe(user.id, {
     end: {
       behavior: EndBehaviorType.AfterSilence,
@@ -37,7 +45,6 @@ export function record(interaction: CommandInteraction, connection: VoiceConnect
     }
   });
   const decodingSTream = new OpusDecodingStream({}, encoder);
-
   const out = new FileWriter(filename, {
     channels: 1,
     sampleRate: 16000

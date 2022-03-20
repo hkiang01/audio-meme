@@ -6,7 +6,6 @@ import { REST } from '@discordjs/rest';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { record } from './record';
 import { GuildMember } from 'discord.js';
-import { joinVoiceChannel } from '@discordjs/voice';
 
 
 const slashCommand = new SlashCommandBuilder()
@@ -32,15 +31,7 @@ client.on('interactionCreate', async interaction => {
   switch (interaction.options.getSubcommand()) {
     case 'record':
       if (interaction.member instanceof GuildMember && interaction.member.voice.channel) {
-        console.log('recording');
-        const connection = joinVoiceChannel({
-          channelId: interaction.member.voice.channel.id,
-          guildId: interaction.guild.id,
-          selfDeaf: false,
-          selfMute: true,
-          adapterCreator: interaction.guild.voiceAdapterCreator,
-        })
-        record(interaction, connection);
+        record(interaction, interaction.member.voice.channel.id, interaction.guild.id);
       } else {
         await interaction.reply('Join a voice channel and try again');
         return;
