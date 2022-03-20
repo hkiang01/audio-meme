@@ -65,7 +65,7 @@ client.on('interactionCreate', async interaction => {
       }
       break;
     default:
-      await interaction.reply('Available subcommands: record, play');
+      await interaction.reply({ephemeral: true, content: 'Available subcommands: record, play'});
   }
   return;
 });
