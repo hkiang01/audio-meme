@@ -63,6 +63,9 @@ client.on('interactionCreate', async interaction => {
       name = interaction.options.getString("name");
       await interaction.reply(`▶ playing ${name}`);
       err = await play(interaction.guild, interaction.member.voice.channel, name);
+      if (err) {
+        await interaction.followUp(`❌ Error playing ${name} - ${err.message}`);
+      }
       break;
     default:
       await interaction.reply({ephemeral: true, content: 'Available subcommands: record, play'});
