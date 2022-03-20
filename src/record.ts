@@ -23,7 +23,7 @@ class OpusDecodingStream extends Transform {
   }
 }
 
-export function record(guild: Guild, voiceBasedChannel: VoiceBasedChannel, user: User, name: string) {
+export async function record(guild: Guild, voiceBasedChannel: VoiceBasedChannel, user: User, name: string) {
   // see https://github.com/discordjs/voice/issues/209#issuecomment-930288577
   // see https://github.com/Yvtq8K3n/BobbyMcLovin/blob/742d041f5d3bd621628681c9ded0d7acde096c24/index.js#L42
   // A Readable object mode stream of Opus packets
@@ -54,17 +54,15 @@ export function record(guild: Guild, voiceBasedChannel: VoiceBasedChannel, user:
     sampleRate: 16000
   });
 
-	pipeline(opusStream, decodingStream, out, (err) => {
-		if (err) {
-			console.warn(`❌ Error recording file ${filename} - ${err.message}`);
-		} else {
-			console.log(`✅ Recorded ${filename}`);
-		}
-    connection.destroy();
-	});
+  return new Promise<NodeJS.ErrnoException>((resolve) => {
+    pipeline(opusStream, decodingStream, out, (err) => {
+      connection.destroy();
+      resolve(err);
+    });
+  })
 }
 
-export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, name: string, interaction: CommandInteraction ) {
+export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, name: string) {
   const filename = `./recordings/${guild.id}/${name}.wav`;
   const connection = joinVoiceChannel({
     channelId: voiceBasedChannel.id,
@@ -77,8 +75,10 @@ export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, n
   const player = createAudioPlayer();
   player.play(resource);
   connection.subscribe(player);
-  player.on(AudioPlayerStatus.Idle, async () => {
-    connection.destroy();
-    await interaction.reply({ephemeral: true, content: `played ${name}`})
-  });
+  return new Promise<void>((resolve) => {
+    player.on(AudioPlayerStatus.Idle, async () => {
+      connection.destroy();
+      resolve();
+    });
+  })
 }

@@ -40,7 +40,7 @@ client.on('interactionCreate', async interaction => {
   if (!interaction.isCommand()) return;
   if (interaction.commandName !== 'audiomeme') return;
   if (!interaction.guild) {
-    await interaction.reply('audiomeme only works in guild text channels');
+    await interaction.reply({ephemeral: true, content: 'audiomeme only works in guild text channels'});
     return;
   }
 
@@ -48,17 +48,23 @@ client.on('interactionCreate', async interaction => {
     case 'record':
       if (interaction.member instanceof GuildMember && interaction.member.voice.channel) {
         const name = interaction.options.getString("name");
-        record(interaction.guild, interaction.member.voice.channel, interaction.user, name);
+        await interaction.reply(`🔴 recording ${name}`);
+        const err = await record(interaction.guild, interaction.member.voice.channel, interaction.user, name);
+        if (err) {
+          await interaction.followUp(`❌ Error recording file ${name} - ${err.message}`);
+        } else {
+          await interaction.followUp(`✅ Recorded ${name}`);
+        }
       } else {
         await interaction.reply({ephemeral: true, content: 'Join a voice channel and try again'});
         return;
       }
-      await interaction.reply({ephemeral: true, content: 'recording'});
       break;
     case 'play':
       if (interaction.member instanceof GuildMember && interaction.member.voice.channel) {
         const name = interaction.options.getString("name");
-        await play(interaction.guild, interaction.member.voice.channel, name, interaction);
+        await play(interaction.guild, interaction.member.voice.channel, name);
+        await interaction.reply(`played ${name}`)
       } else {
         await interaction.reply({ephemeral: true, content: 'Join a voice channel and try again'});
         return;
