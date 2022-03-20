@@ -2,7 +2,7 @@
 import { EndBehaviorType, VoiceConnection } from '@discordjs/voice';
 import { CommandInteraction } from 'discord.js';
 import { Transform } from 'stream';
-const { OpusEncoder, OpusDencoder} = require('@discordjs/opus');
+const { OpusEncoder} = require('@discordjs/opus');
 import { pipeline } from 'node:stream';
 import { FileWriter } from 'wav';
 
