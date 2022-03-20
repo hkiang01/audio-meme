@@ -1,0 +1,10 @@
+source:
+  kind: Service
+  name: audio-memes-postgres
+  fieldPath: metadata.name
+targets:
+  - select:
+      name: audio-memes
+      kind: Deployment
+    fieldPaths:
+      - spec.template.spec.containers.[name=audio-memes].env.[name=POSTGRES_HOST].value

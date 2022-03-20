@@ -1,0 +1,91 @@
+# You can override the included template(s) by including variable overrides
+# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
+# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings
+# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
+# Note that environment variables can be set in several places
+# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
+stages:
+  - build
+  - test
+  - deploy
+  - teardown
+sast:
+  stage: test
+include:
+  - template: Security/SAST.gitlab-ci.yml
+
+default:
+  interruptible: true
+  tags:
+    - harrison-kubernetes
+
+build:
+  stage: build
+  needs: []
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --cache=true --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+
+manifest:
+  stage: build
+  needs: []
+  image:
+    name: k8s.gcr.io/kustomize/kustomize:v4.4.1
+  script:
+    - |
+      cd $CI_PROJECT_DIR/k8s
+
+      # set version string
+      /app/kustomize edit set image registry.gitlab.com/cmongmang/audio-memes:$CI_COMMIT_SHORT_SHA
+
+      # prevent multiple branches from creating conflicting resources
+      /app/kustomize edit set nameprefix $CI_COMMIT_REF_SLUG-
+
+      cd $CI_PROJECT_DIR
+      CLIENT_ID=$CLIENT_ID \
+      DISCORD_BOT_TOKEN=$DISCORD_BOT_TOKEN \
+      VERSION=$CI_COMMIT_SHORT_SHA \
+      POSTGRES_USER=$POSTGRES_USER \
+      POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+      /app/kustomize build k8s > manifest.yaml
+  artifacts:
+    paths:
+      - manifest.yaml
+
+deploy:
+  stage: deploy
+  needs:
+    - build
+    - job: manifest
+      artifacts: true
+  when: manual
+  image: bitnami/kubectl:1.22
+  script:
+    - kubectl create secret docker-registry regcred --docker-server=$CI_REGISTRY --docker-username=$CI_REGISTRY_USER --docker-password=$CI_REGISTRY_PASSWORD --docker-email=$GITLAB_USER_EMAIL --dry-run -o yaml > regcred.yaml
+    - kubectl apply -f regcred.yaml
+    - kubectl apply -f manifest.yaml
+  variables:
+    GIT_STRATEGY: none
+  environment:
+    name: $CI_COMMIT_REF_NAME
+    on_stop: teardown
+
+teardown:
+  stage: teardown
+  needs:
+    - deploy
+    - job: manifest
+      artifacts: true
+  when: manual
+  image: bitnami/kubectl:1.22
+  script:
+    - kubectl delete -f manifest.yaml
+  variables:
+    GIT_STRATEGY: none
+  environment:
+    name: $CI_COMMIT_REF_NAME
+    action: stop

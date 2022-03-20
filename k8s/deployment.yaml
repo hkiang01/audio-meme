@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: audio-memes
+  name: audio-memes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: audio-memes
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: audio-memes
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      securityContext:
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+        - image: registry.gitlab.com/cmongmang/audio-memes
+          imagePullPolicy: IfNotPresent
+          name: audio-memes
+          resources: {}
+          env:
+            - name: VERSION
+              valueFrom:
+                configMapKeyRef:
+                  key: VERSION
+                  name: audio-memes-version
+            - name: CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: audio-memes
+                  key: CLIENT_ID
+            - name: DISCORD_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: audio-memes
+                  key: DISCORD_BOT_TOKEN
+            - name: POSTGRES_HOST
+              value: audio-memes-postgres
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: audio-memes-postgres
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: audio-memes-postgres
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              value: postgres

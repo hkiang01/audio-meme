@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+generatorOptions:
+  # TODO: Disable once https://github.com/kubernetes-sigs/kustomize/issues/1301 has viable solution
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: audio-memes-version
+    envs:
+      - .env.version
+
+secretGenerator:
+  - name: audio-memes
+    envs:
+      - .env.app
+  - name: audio-memes-postgres
+    envs:
+      - .env.db
+
+images:
+  - name: registry.gitlab.com/cmongmang/audio-memes
+
+resources:
+  - deployment.yaml
+  - db.yaml
+
+replacements:
+  - path: replacements.yaml
