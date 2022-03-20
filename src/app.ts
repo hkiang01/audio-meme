@@ -59,6 +59,7 @@ client.on('interactionCreate', async interaction => {
       if (interaction.member instanceof GuildMember && interaction.member.voice.channel) {
         const name = interaction.options.getString("name");
         play(interaction.guild, interaction.member.voice.channel, name);
+        await interaction.reply({ephemeral: true, content: `played ${name}`})
       } else {
         await interaction.reply({ephemeral: true, content: 'Join a voice channel and try again'});
         return;
