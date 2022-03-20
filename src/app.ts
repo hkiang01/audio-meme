@@ -53,7 +53,7 @@ client.on('interactionCreate', async interaction => {
   switch (interaction.options.getSubcommand()) {
     case 'record':
       name = interaction.options.getString("name");
-      await interaction.reply(`🔴 recording ${name}`);
+      await interaction.reply(`🔴 recording ${name} from ${interaction.user.username}'s mic`);
       err = await record(interaction.guild, interaction.member.voice.channel, interaction.user, name);
       if (err) {
         await interaction.followUp(`❌ Error recording file ${name} - ${err.message}`);
