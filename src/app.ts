@@ -63,6 +63,7 @@ client.on('interactionCreate', async interaction => {
         await interaction.reply({ephemeral: true, content: 'Join a voice channel and try again'});
         return;
       }
+      break;
     default:
       await interaction.reply('Available subcommands: record, play');
   }
