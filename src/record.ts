@@ -23,7 +23,7 @@ class OpusDecodingStream extends Transform {
   }
 }
 
-export async function record(guild: Guild, voiceBasedChannel: VoiceBasedChannel, user: User, name: string) {
+export async function record(guild: Guild, voiceBasedChannel: VoiceBasedChannel, user: User, name: string): Promise<NodeJS.ErrnoException> {
   // see https://github.com/discordjs/voice/issues/209#issuecomment-930288577
   // see https://github.com/Yvtq8K3n/BobbyMcLovin/blob/742d041f5d3bd621628681c9ded0d7acde096c24/index.js#L42
   // A Readable object mode stream of Opus packets
@@ -62,7 +62,7 @@ export async function record(guild: Guild, voiceBasedChannel: VoiceBasedChannel,
   })
 }
 
-export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, name: string) {
+export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, name: string): Promise<NodeJS.ErrnoException> {
   const filename = `./recordings/${guild.id}/${name}.wav`;
   const connection = joinVoiceChannel({
     channelId: voiceBasedChannel.id,
@@ -75,7 +75,7 @@ export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, n
   const player = createAudioPlayer();
   player.play(resource);
   connection.subscribe(player);
-  return new Promise<void>((resolve) => {
+  return new Promise<NodeJS.ErrnoException>((resolve) => {
     player.on(AudioPlayerStatus.Idle, async () => {
       connection.destroy();
       resolve();

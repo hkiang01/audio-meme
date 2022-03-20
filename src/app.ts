@@ -43,35 +43,32 @@ client.on('interactionCreate', async interaction => {
     await interaction.reply({ephemeral: true, content: 'audiomeme only works in guild text channels'});
     return;
   }
+  if (!(interaction.member instanceof GuildMember) || !interaction.member.voice.channel) {
+    await interaction.reply({ephemeral: true, content: 'Join a voice channel and try again'});
+    return;
+  }
 
+  let name: string = undefined;
+  let err: NodeJS.ErrnoException = undefined;
   switch (interaction.options.getSubcommand()) {
     case 'record':
-      if (interaction.member instanceof GuildMember && interaction.member.voice.channel) {
-        const name = interaction.options.getString("name");
-        await interaction.reply(`🔴 recording ${name}`);
-        const err = await record(interaction.guild, interaction.member.voice.channel, interaction.user, name);
-        if (err) {
-          await interaction.followUp(`❌ Error recording file ${name} - ${err.message}`);
-        } else {
-          await interaction.followUp(`✅ Recorded ${name}`);
-        }
+      name = interaction.options.getString("name");
+      await interaction.reply(`🔴 recording ${name}`);
+      err = await record(interaction.guild, interaction.member.voice.channel, interaction.user, name);
+      if (err) {
+        await interaction.followUp(`❌ Error recording file ${name} - ${err.message}`);
       } else {
-        await interaction.reply({ephemeral: true, content: 'Join a voice channel and try again'});
-        return;
+        await interaction.followUp(`✅ Recorded ${name}`);
       }
       break;
     case 'play':
-      if (interaction.member instanceof GuildMember && interaction.member.voice.channel) {
-        const name = interaction.options.getString("name");
-        await play(interaction.guild, interaction.member.voice.channel, name);
-        await interaction.reply(`played ${name}`)
-      } else {
-        await interaction.reply({ephemeral: true, content: 'Join a voice channel and try again'});
-        return;
-      }
+      name = interaction.options.getString("name");
+      err = await play(interaction.guild, interaction.member.voice.channel, name);
+      await interaction.reply(`played ${name}`)
       break;
     default:
       await interaction.reply({ephemeral: true, content: 'Available subcommands: record, play'});
+      break;
   }
   return;
 });
