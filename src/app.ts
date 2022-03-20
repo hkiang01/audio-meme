@@ -31,9 +31,9 @@ client.on('interactionCreate', async interaction => {
   switch (interaction.options.getSubcommand()) {
     case 'record':
       if (interaction.member instanceof GuildMember && interaction.member.voice.channel) {
-        record(interaction, interaction.member.voice.channel.id, interaction.guild.id);
+        record(interaction.guild, interaction.member.voice.channel, interaction.user);
       } else {
-        await interaction.reply('Join a voice channel and try again');
+        await interaction.reply({ephemeral: true, content: 'Join a voice channel and try again'});
         return;
       }
       await interaction.reply({ephemeral: true, content: 'recording'});
