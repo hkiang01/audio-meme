@@ -78,7 +78,7 @@ export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, n
   return new Promise<NodeJS.ErrnoException>((resolve) => {
     player.on(AudioPlayerStatus.Idle, async () => {
       connection.destroy();
-      resolve();
+      resolve(undefined);
     });
   })
 }
