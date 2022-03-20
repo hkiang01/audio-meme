@@ -182,5 +182,4 @@ dist
 *.vsix
 
 
-recordings/*.ogg
-recordings/*.wav
+recordings/**

@@ -6,6 +6,7 @@ import { OpusEncoder } from '@discordjs/opus';
 import { pipeline } from 'node:stream';
 import { FileWriter } from 'wav';
 import { joinVoiceChannel } from '@discordjs/voice';
+import fs from 'fs';
 
 
 class OpusDecodingStream extends Transform {
@@ -22,12 +23,16 @@ class OpusDecodingStream extends Transform {
   }
 }
 
-export function record(guild: Guild, voiceBasedChannel: VoiceBasedChannel, user: User) {
+export function record(guild: Guild, voiceBasedChannel: VoiceBasedChannel, user: User, name: string) {
   // see https://github.com/discordjs/voice/issues/209#issuecomment-930288577
   // see https://github.com/Yvtq8K3n/BobbyMcLovin/blob/742d041f5d3bd621628681c9ded0d7acde096c24/index.js#L42
   // A Readable object mode stream of Opus packets
   // Will only end when the voice connection is destroyed
-  const filename = `./recordings/${Date.now()}-${guild.id}-${voiceBasedChannel.id}.wav`;
+  const guildDir = `./recordings/${guild.id}`;
+  if (!fs.existsSync(guildDir)){
+    fs.mkdirSync(guildDir);
+  }
+  const filename = `${guildDir}/${name}.wav`;
   const encoder = new OpusEncoder(16000, 1)
 
   const connection = joinVoiceChannel({

@@ -15,6 +15,12 @@ const slashCommand = new SlashCommandBuilder()
     subcommand
     .setName("record")
     .setDescription("Record an audio meme")
+    .addStringOption(option =>
+      option
+      .setName("name")
+      .setDescription("What to name the saved audio meme, used for retrieval")
+      .setRequired(true)
+    )
 );
 
 const rest = new REST({version: '9'}).setToken(DISCORD_BOT_TOKEN);
@@ -24,14 +30,15 @@ client.on('interactionCreate', async interaction => {
   if (!interaction.isCommand()) return;
   if (interaction.commandName !== 'audiomeme') return;
   if (!interaction.guild) {
-    await interaction.reply('audiomeme only works in guild text channels');
+    await interaction.reply('audiomeme only works in gu ild text channels');
     return;
   }
 
   switch (interaction.options.getSubcommand()) {
     case 'record':
       if (interaction.member instanceof GuildMember && interaction.member.voice.channel) {
-        record(interaction.guild, interaction.member.voice.channel, interaction.user);
+        const name = interaction.options.getString("name");
+        record(interaction.guild, interaction.member.voice.channel, interaction.user, name);
       } else {
         await interaction.reply({ephemeral: true, content: 'Join a voice channel and try again'});
         return;
