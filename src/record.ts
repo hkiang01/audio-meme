@@ -49,5 +49,6 @@ export function record(interaction: CommandInteraction, connection: VoiceConnect
 		} else {
 			console.log(`✅ Recorded ${filename}`);
 		}
+    connection.destroy();
 	});
 }
