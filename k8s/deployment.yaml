@@ -18,12 +18,20 @@ spec:
       imagePullSecrets:
         - name: regcred
       securityContext:
+        runAsNonRoot: true
         runAsUser: 1001
         fsGroup: 1001
+        seccompProfile:
+          type: "RuntimeDefault"
       containers:
         - image: registry.gitlab.com/cmongmang/audio-meme
           imagePullPolicy: IfNotPresent
           name: audio-meme
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - "ALL"
           resources: {}
           env:
             - name: VERSION
