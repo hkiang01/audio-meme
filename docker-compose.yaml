@@ -3,8 +3,6 @@ services:
   app:
     build:
       context: .
-      args:
-        DOCKER_BUILDKIT: 0
     env_file:
       - .env
     volumes:
