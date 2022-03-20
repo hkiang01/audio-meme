@@ -57,15 +57,12 @@ client.on('interactionCreate', async interaction => {
       err = await record(interaction.guild, interaction.member.voice.channel, interaction.user, name);
       if (err) {
         await interaction.followUp(`❌ Error recording file ${name} - ${err.message}`);
-      } else {
-        await interaction.followUp(`✅ Recorded ${name}`);
       }
       break;
     case 'play':
       name = interaction.options.getString("name");
       await interaction.reply(`▶ playing ${name}`);
       err = await play(interaction.guild, interaction.member.voice.channel, name);
-      await interaction.followUp(`played ${name}`)
       break;
     default:
       await interaction.reply({ephemeral: true, content: 'Available subcommands: record, play'});
