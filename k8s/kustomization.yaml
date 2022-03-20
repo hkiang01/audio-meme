@@ -6,17 +6,18 @@ generatorOptions:
   disableNameSuffixHash: true
 
 configMapGenerator:
-  - name: audio-memes-version
+  - name: audio-meme-version
     envs:
       - .env.version
 
 secretGenerator:
-  - name: audio-memes
+  - name: audio-meme
     envs:
       - .env.app
 
 images:
-  - name: registry.gitlab.com/cmongmang/audio-memes
+  - name: registry.gitlab.com/cmongmang/audio-meme
 
 resources:
   - deployment.yaml
+  - pvc.yaml

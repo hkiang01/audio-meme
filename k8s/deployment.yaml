@@ -2,18 +2,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: audio-memes
-  name: audio-memes
+    app: audio-meme
+  name: audio-meme
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: audio-memes
+      app: audio-meme
   strategy: {}
   template:
     metadata:
       labels:
-        app: audio-memes
+        app: audio-meme
     spec:
       imagePullSecrets:
         - name: regcred
@@ -21,39 +21,30 @@ spec:
         runAsUser: 1001
         fsGroup: 1001
       containers:
-        - image: registry.gitlab.com/cmongmang/audio-memes
+        - image: registry.gitlab.com/cmongmang/audio-meme
           imagePullPolicy: IfNotPresent
-          name: audio-memes
+          name: audio-meme
           resources: {}
           env:
             - name: VERSION
               valueFrom:
                 configMapKeyRef:
                   key: VERSION
-                  name: audio-memes-version
+                  name: audio-meme-version
             - name: CLIENT_ID
               valueFrom:
                 secretKeyRef:
-                  name: audio-memes
+                  name: audio-meme
                   key: CLIENT_ID
             - name: DISCORD_BOT_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: audio-memes
+                  name: audio-meme
                   key: DISCORD_BOT_TOKEN
-            - name: POSTGRES_HOST
-              value: audio-memes-postgres
-            - name: POSTGRES_PORT
-              value: "5432"
-            - name: POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  name: audio-memes-postgres
-                  key: POSTGRES_USER
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: audio-memes-postgres
-                  key: POSTGRES_PASSWORD
-            - name: POSTGRES_DB
-              value: postgres
+          volumeMounts:
+            - mountPath: /app/recordings
+              name: recordings
+      volumes:
+        - name: recordings
+          persistentVolumeClaim:
+            claimName: audio-meme

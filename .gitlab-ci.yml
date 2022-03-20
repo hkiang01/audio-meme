@@ -40,7 +40,7 @@ manifest:
       cd $CI_PROJECT_DIR/k8s
 
       # set version string
-      /app/kustomize edit set image registry.gitlab.com/cmongmang/audio-memes:$CI_COMMIT_SHORT_SHA
+      /app/kustomize edit set image registry.gitlab.com/cmongmang/audio-meme:$CI_COMMIT_SHORT_SHA
 
       # prevent multiple branches from creating conflicting resources
       /app/kustomize edit set nameprefix $CI_COMMIT_REF_SLUG-
