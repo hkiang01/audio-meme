@@ -43,13 +43,13 @@ export function record(guild: Guild, voiceBasedChannel: VoiceBasedChannel, user:
       duration: 1000
     }
   });
-  const decodingSTream = new OpusDecodingStream({}, encoder);
+  const decodingStream = new OpusDecodingStream({}, encoder);
   const out = new FileWriter(filename, {
     channels: 1,
     sampleRate: 16000
   });
 
-	pipeline(opusStream, decodingSTream, out, (err) => {
+	pipeline(opusStream, decodingStream, out, (err) => {
 		if (err) {
 			console.warn(`❌ Error recording file ${filename} - ${err.message}`);
 		} else {
