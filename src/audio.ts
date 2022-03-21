@@ -103,7 +103,7 @@ export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, n
   })
 }
 
-export function deleteMeme(guild: Guild, name: string): Promise<Error> {
+export async function deleteMeme(guild: Guild, name: string): Promise<Error> {
   return new Promise((resolve) => {
     fs.unlink(`./recorings/${guild.id}/{name}.wav`, (err) =>
       resolve(err)
