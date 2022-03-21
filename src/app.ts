@@ -4,7 +4,7 @@ import {CLIENT_ID, DISCORD_BOT_TOKEN} from './constants';
 import { REST } from '@discordjs/rest';
 
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { deleteMeme, pickRandom, play, record } from './audio';
+import { deleteMeme, exists, pickRandom, play, record } from './audio';
 import { GuildMember } from 'discord.js';
 
 
@@ -65,6 +65,7 @@ client.on('interactionCreate', async interaction => {
 
   let name: string = undefined;
   let err: NodeJS.ErrnoException = undefined;
+  let memeExists: boolean = undefined;
   switch (interaction.options.getSubcommand()) {
     case 'record':
       name = interaction.options.getString("name");
@@ -76,8 +77,13 @@ client.on('interactionCreate', async interaction => {
       break;
     case 'play':
       name = interaction.options.getString("name");
+      memeExists = !await exists(interaction.guild, name)
+      if (memeExists) {
+        await interaction.reply(`❌ ${name} not found`);
+        break;
+      }
       await interaction.reply(`▶ playing ${name}`);
-      err = await play(interaction.guild, guildMember.voice.channel, name, undefined);
+      err = await play(interaction.guild, guildMember.voice.channel, name);
       if (err) {
         await interaction.followUp(`❌ Error playing ${name} - ${err.message}`);
       }
@@ -88,7 +94,7 @@ client.on('interactionCreate', async interaction => {
           await interaction.followUp(`❌ Error picking random meme - ${err.message}`);
         }
         await interaction.reply(`▶ playing ${name}`);
-        err = await play(interaction.guild, guildMember.voice.channel, name, undefined);
+        err = await play(interaction.guild, guildMember.voice.channel, name);
         if (err) {
           await interaction.followUp(`❌ Error playing ${name} - ${err.message}`);
         }

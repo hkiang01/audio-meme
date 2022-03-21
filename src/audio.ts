@@ -78,11 +78,17 @@ export async function record(guild: Guild, voiceBasedChannel: VoiceBasedChannel,
   })
 }
 
-export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, name: string, file: string): Promise<Error> {
-  let filename = undefined;
-  if (file) filename = file;
-  else if (name) filename = `./recordings/${guild.id}/${name}.wav`;
-  else return new Promise((resolve) => resolve(new Error("Must specify either name or file")))
+export async function exists(guild: Guild, name: string): Promise<boolean> {
+  const path = `./recordings/${guild.id}/${name}.wav`;
+  return new Promise((resolve) => {
+    fs.access(path, fs.constants.F_OK, (err) => {
+      resolve(!err)
+    })
+  })
+}
+
+export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, name: string): Promise<Error> {
+  const path = `./recordings/${guild.id}/${name}.wav`;
 
   const connection = joinVoiceChannel({
     channelId: voiceBasedChannel.id,
@@ -91,7 +97,7 @@ export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, n
     selfMute: true,
     adapterCreator: guild.voiceAdapterCreator,
   })
-  const resource = createAudioResource(filename);
+  const resource = createAudioResource(path);
   const player = createAudioPlayer();
   player.play(resource);
   connection.subscribe(player);
