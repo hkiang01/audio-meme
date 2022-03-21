@@ -95,6 +95,7 @@ client.on('interactionCreate', async interaction => {
       })
       break;
     case 'delete':
+      name = interaction.options.getString("name");
       deleteMeme(interaction.guild, name).then(async (err) => {
         if (err) {
           await interaction.followUp(`❌ Error deleting meme - ${err.message}`);
