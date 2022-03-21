@@ -4,7 +4,7 @@ import {CLIENT_ID, DISCORD_BOT_TOKEN} from './constants';
 import { REST } from '@discordjs/rest';
 
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { pickRandom, play, record } from './audio';
+import { deleteMeme, pickRandom, play, record } from './audio';
 import { GuildMember } from 'discord.js';
 
 
@@ -30,6 +30,16 @@ const slashCommand = new SlashCommandBuilder()
       .setName("name")
       .setDescription("What the saved audio meme was named")
       .setRequired(true)
+    )
+  ).addSubcommand(subCommand =>
+   subCommand
+   .setName("delete")
+   .setDescription("Delete an audio meme")
+   .addStringOption(option =>
+    option
+    .setName("name")
+    .setDescription("The audio meme to delete")
+    .setRequired(true)
     )
   ).addSubcommand(subCommand =>
     subCommand
@@ -84,8 +94,16 @@ client.on('interactionCreate', async interaction => {
         }
       })
       break;
+    case 'delete':
+      deleteMeme(interaction.guild, name).then(async (err) => {
+        if (err) {
+          await interaction.followUp(`❌ Error deleting meme - ${err.message}`);
+        }
+        await interaction.reply(`🗑️ deleted ${name}`)
+      });
+      break;
     default:
-      await interaction.reply({ephemeral: true, content: 'Available subcommands: record, play, random'});
+      await interaction.reply({ephemeral: true, content: 'Available subcommands: record, play, delete, random'});
       break;
   }
   return;
