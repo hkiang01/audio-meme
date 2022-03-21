@@ -28,7 +28,12 @@ export async function pickRandom(guild: Guild): Promise<[string, Error]> {
   return new Promise<[string,Error]>((resolve) => {
     glob(`./recordings/${guild.id}/*.wav`, (err: Error, files: string[]) => {
       if (err) {
-        resolve([undefined, err])
+        resolve([undefined, err]);
+        return;
+      }
+      if (files.length == 0) {
+        resolve([undefined, new Error("No memes found")]);
+        return;
       }
       const randIdx = Math.floor(Math.random() * files.length);
       const randFilePath = files[randIdx];

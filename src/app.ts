@@ -85,18 +85,20 @@ client.on('interactionCreate', async interaction => {
       await interaction.reply(`▶ playing ${name}`);
       err = await play(interaction.guild, guildMember.voice.channel, name);
       if (err) {
-        await interaction.followUp(`❌ Error playing ${name} - ${err.message}`);
+        await interaction.reply(`❌ Error playing ${name} - ${err.message}`);
       }
       break;
     case 'random':
       pickRandom(interaction.guild).then( async ([name, err]) => {
         if (err) {
-          await interaction.followUp(`❌ Error picking random meme - ${err.message}`);
+          await interaction.reply(`❌ Error picking random meme - ${err.message}`);
+          return;
         }
         await interaction.reply(`▶ playing ${name}`);
         err = await play(interaction.guild, guildMember.voice.channel, name);
         if (err) {
-          await interaction.followUp(`❌ Error playing ${name} - ${err.message}`);
+          await interaction.reply(`❌ Error playing ${name} - ${err.message}`);
+          return;
         }
       })
       break;
@@ -104,7 +106,8 @@ client.on('interactionCreate', async interaction => {
       name = interaction.options.getString("name");
       deleteMeme(interaction.guild, name).then(async (err) => {
         if (err) {
-          await interaction.followUp(`❌ Error deleting meme - ${err.message}`);
+          await interaction.reply(`❌ Error deleting meme - ${err.message}`);
+          return;
         }
         await interaction.reply(`🗑️ deleted ${name}`)
       });
