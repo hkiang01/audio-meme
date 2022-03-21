@@ -1,6 +1,6 @@
 // see https://github.com/discordjs/discord.js/blob/72577c4bfd02524a27afb6ff4aebba9301a690d3/packages/voice/examples/recorder/src/createListeningStream.ts
 import { AudioPlayerStatus, createAudioPlayer, createAudioResource, EndBehaviorType } from '@discordjs/voice';
-import { CommandInteraction, Guild, User, VoiceBasedChannel } from 'discord.js';
+import { Guild, User, VoiceBasedChannel } from 'discord.js';
 import { Transform, TransformOptions } from 'stream';
 import { OpusEncoder } from '@discordjs/opus';
 import { pipeline } from 'node:stream';
