@@ -4,7 +4,7 @@ import {CLIENT_ID, DISCORD_BOT_TOKEN} from './constants';
 import { REST } from '@discordjs/rest';
 
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { deleteMeme, exists, pickRandom, play, record } from './audio';
+import { deleteMeme, exists, pickRandom, play, record, recordYoutube } from './audio';
 import { GuildMember } from 'discord.js';
 
 
@@ -20,6 +20,11 @@ const slashCommand = new SlashCommandBuilder()
       .setName("name")
       .setDescription("What to name the saved audio meme, used for retrieval")
       .setRequired(true)
+    )
+    .addStringOption(option =>
+      option
+      .setName("youtubeurl")
+      .setDescription("Create an audio meme using audio from a youtube video")
     )
   ).addSubcommand(subCommand =>
     subCommand
@@ -80,10 +85,20 @@ client.on('interactionCreate', async interaction => {
         await interaction.reply(`❌ Error recording ${name} - ${name} exists. Please delete and re-record`);
         return;
       }
-      await interaction.reply(`🔴 recording ${name} from ${interaction.user.username}'s mic`);
-      err = await record(interaction.guild, guildMember.voice.channel, interaction.user, name);
+      const youtubeUrl = interaction.options.getString('youtubeurl');
+      if (youtubeUrl) {
+        await interaction.reply(`🔴 recording ${name} from ${youtubeUrl}`);
+        err = await recordYoutube(interaction.guild, name, youtubeUrl);
+        return;
+      } else {
+        await interaction.reply(`🔴 recording ${name} from ${interaction.user.username}'s mic`);
+        err = await record(interaction.guild, guildMember.voice.channel, interaction.user, name);
+      }
       if (err) {
         await interaction.followUp(`❌ Error recording ${name} - ${err.message}`);
+        return;
+      } else {
+        await interaction.followUp(`✅ Successfully recorded ${name}`);
       }
       break;
     case 'play':
@@ -113,12 +128,17 @@ client.on('interactionCreate', async interaction => {
       })
       break;
     case 'delete':
+      if (!await exists(interaction.guild, name)) {
+        await interaction.reply(`❌ Error deleting ${name} - does not exist, already deleted`);
+        return;
+      }
       deleteMeme(interaction.guild, name).then(async (err) => {
         if (err) {
           await interaction.reply(`❌ Error deleting ${name} - ${err.message}`);
           return;
         }
-        await interaction.reply(`🗑️ deleted ${name}`)
+        await interaction.reply(`🗑️ deleted ${name}`);
+        return;
       });
       break;
     default:

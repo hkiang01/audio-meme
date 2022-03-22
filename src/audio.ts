@@ -7,6 +7,7 @@ import fs from 'fs';
 import glob from 'glob';
 import path from 'path';
 import {opus} from 'prism-media';
+import ytdl from 'ytdl-core';
 
 export async function pickRandom(guild: Guild): Promise<[string, Error]> {
   return new Promise<[string,Error]>((resolve) => {
@@ -64,6 +65,22 @@ export async function record(guild: Guild, voiceBasedChannel: VoiceBasedChannel,
   return new Promise<NodeJS.ErrnoException>((resolve) => {
     pipeline(opusStream, oggStream, out, (err) => {
       connection.destroy();
+      resolve(err);
+    });
+  })
+}
+// /audiomeme record name:gyro youtubeurl:http://www.youtube.com/watch?v=ImbSSTvRtPw
+export async function recordYoutube(guild: Guild, name: string, youtubeUrl: string): Promise<Error> {
+  const guildDir = `./recordings/${guild.id}`;
+
+  if (!fs.existsSync(guildDir)){
+    fs.mkdirSync(guildDir);
+  }
+  const filename = `${guildDir}/${name}.ogg`;
+  const stream = ytdl(youtubeUrl, {filter: 'audioonly'});
+  const out = createWriteStream(filename);
+  return new Promise<Error>((resolve) => {
+    pipeline(stream, out, (err) => {
       resolve(err);
     });
   })
