@@ -1,32 +1,18 @@
 // see https://github.com/discordjs/discord.js/blob/72577c4bfd02524a27afb6ff4aebba9301a690d3/packages/voice/examples/recorder/src/createListeningStream.ts
 import { AudioPlayerStatus, createAudioPlayer, createAudioResource, EndBehaviorType } from '@discordjs/voice';
 import { Guild, User, VoiceBasedChannel } from 'discord.js';
-import { Transform, TransformOptions } from 'stream';
 import { OpusEncoder } from '@discordjs/opus';
 import { pipeline } from 'node:stream';
-import { FileWriter } from 'wav';
+import { createWriteStream } from 'node:fs';
 import { joinVoiceChannel } from '@discordjs/voice';
 import fs from 'fs';
 import glob from 'glob';
 import path from 'path';
-
-class OpusDecodingStream extends Transform {
-  encoder: OpusEncoder
-  
-  constructor(options: TransformOptions, encoder: OpusEncoder) {
-      super(options)
-      this.encoder = encoder
-  }
-  
-  _transform(data: Buffer, encoding, callback: () => void) {
-      this.push(this.encoder.decode(data))
-      callback()
-  }
-}
+import {opus} from 'prism-media';
 
 export async function pickRandom(guild: Guild): Promise<[string, Error]> {
   return new Promise<[string,Error]>((resolve) => {
-    glob(`./recordings/${guild.id}/*.wav`, (err: Error, files: string[]) => {
+    glob(`./recordings/${guild.id}/*.ogg`, (err: Error, files: string[]) => {
       if (err) {
         resolve([undefined, err]);
         return;
@@ -53,7 +39,7 @@ export async function record(guild: Guild, voiceBasedChannel: VoiceBasedChannel,
   if (!fs.existsSync(guildDir)){
     fs.mkdirSync(guildDir);
   }
-  const filename = `${guildDir}/${name}.wav`;
+  const filename = `${guildDir}/${name}.ogg`;
   const encoder = new OpusEncoder(16000, 1)
 
   const connection = joinVoiceChannel({
@@ -69,14 +55,20 @@ export async function record(guild: Guild, voiceBasedChannel: VoiceBasedChannel,
       duration: 1000
     }
   });
-  const decodingStream = new OpusDecodingStream({}, encoder);
-  const out = new FileWriter(filename, {
-    channels: 1,
-    sampleRate: 16000
-  });
+  const oggStream = new opus.OggLogicalBitstream({
+		opusHead: new opus.OpusHead({
+			channelCount: 2,
+			sampleRate: 48000,
+		}),
+		pageSizeControl: {
+			maxPackets: 10,
+		},
+	});
+
+  const out = createWriteStream(filename);
 
   return new Promise<NodeJS.ErrnoException>((resolve) => {
-    pipeline(opusStream, decodingStream, out, (err) => {
+    pipeline(opusStream, oggStream, out, (err) => {
       connection.destroy();
       resolve(err);
     });
@@ -84,7 +76,7 @@ export async function record(guild: Guild, voiceBasedChannel: VoiceBasedChannel,
 }
 
 export async function exists(guild: Guild, name: string): Promise<boolean> {
-  const path = `./recordings/${guild.id}/${name}.wav`;
+  const path = `./recordings/${guild.id}/${name}.ogg`;
   return new Promise((resolve) => {
     fs.access(path, fs.constants.F_OK, (err) => {
       resolve(!err)
@@ -93,7 +85,7 @@ export async function exists(guild: Guild, name: string): Promise<boolean> {
 }
 
 export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, name: string): Promise<Error> {
-  const path = `./recordings/${guild.id}/${name}.wav`;
+  const path = `./recordings/${guild.id}/${name}.ogg`;
 
   const connection = joinVoiceChannel({
     channelId: voiceBasedChannel.id,
@@ -116,7 +108,7 @@ export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, n
 
 export async function deleteMeme(guild: Guild, name: string): Promise<Error> {
   return new Promise((resolve) => {
-    fs.unlink(`./recordings/${guild.id}/${name}.wav`, (err) =>
+    fs.unlink(`./recordings/${guild.id}/${name}.ogg`, (err) =>
       resolve(err)
   )})
 }
