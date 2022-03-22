@@ -76,11 +76,11 @@ client.on('interactionCreate', async interaction => {
   let memeExists: boolean = undefined;
   switch (interaction.options.getSubcommand()) {
     case 'record':
-      await interaction.reply(`🔴 recording ${name} from ${interaction.user.username}'s mic`);
       if (await exists(interaction.guild, name)) {
         await interaction.reply(`❌ Error recording ${name} - ${name} exists. Please delete and re-record`);
         return;
       }
+      await interaction.reply(`🔴 recording ${name} from ${interaction.user.username}'s mic`);
       err = await record(interaction.guild, guildMember.voice.channel, interaction.user, name);
       if (err) {
         await interaction.followUp(`❌ Error recording ${name} - ${err.message}`);
