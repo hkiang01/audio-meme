@@ -115,7 +115,7 @@ client.on('interactionCreate', async interaction => {
     case 'delete':
       deleteMeme(interaction.guild, name).then(async (err) => {
         if (err) {
-          await interaction.reply(`❌ Error deleting meme - ${err.message}`);
+          await interaction.reply(`❌ Error deleting ${name} - ${err.message}`);
           return;
         }
         await interaction.reply(`🗑️ deleted ${name}`)
