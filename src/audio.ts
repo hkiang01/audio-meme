@@ -1,7 +1,6 @@
 // see https://github.com/discordjs/discord.js/blob/72577c4bfd02524a27afb6ff4aebba9301a690d3/packages/voice/examples/recorder/src/createListeningStream.ts
 import { AudioPlayerStatus, createAudioPlayer, createAudioResource, EndBehaviorType } from '@discordjs/voice';
 import { Guild, User, VoiceBasedChannel } from 'discord.js';
-import { OpusEncoder } from '@discordjs/opus';
 import { pipeline } from 'node:stream';
 import { createWriteStream } from 'node:fs';
 import { joinVoiceChannel } from '@discordjs/voice';
@@ -40,7 +39,6 @@ export async function record(guild: Guild, voiceBasedChannel: VoiceBasedChannel,
     fs.mkdirSync(guildDir);
   }
   const filename = `${guildDir}/${name}.ogg`;
-  const encoder = new OpusEncoder(16000, 1)
 
   const connection = joinVoiceChannel({
     channelId: voiceBasedChannel.id,
