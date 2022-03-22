@@ -89,7 +89,7 @@ client.on('interactionCreate', async interaction => {
     case 'play':
       memeExists = !await exists(interaction.guild, name)
       if (memeExists) {
-        await interaction.reply(`❌ ${name} not found`);
+        await interaction.reply(`❌ Error playing ${name} - not found`);
         break;
       }
       await interaction.reply(`▶ playing ${name}`);
