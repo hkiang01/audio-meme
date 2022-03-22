@@ -1,4 +1,3 @@
-// see https://github.com/discordjs/discord.js/blob/72577c4bfd02524a27afb6ff4aebba9301a690d3/packages/voice/examples/recorder/src/createListeningStream.ts
 import { AudioPlayerStatus, createAudioPlayer, createAudioResource, EndBehaviorType } from '@discordjs/voice';
 import { Guild, User, VoiceBasedChannel } from 'discord.js';
 import { pipeline } from 'node:stream';
@@ -29,11 +28,8 @@ export async function pickRandom(guild: Guild): Promise<[string, Error]> {
   })
 }
 
+// see https://github.com/discordjs/discord.js/blob/72577c4bfd02524a27afb6ff4aebba9301a690d3/packages/voice/examples/recorder/src/createListeningStream.ts
 export async function record(guild: Guild, voiceBasedChannel: VoiceBasedChannel, user: User, name: string): Promise<NodeJS.ErrnoException> {
-  // see https://github.com/discordjs/voice/issues/209#issuecomment-930288577
-  // see https://github.com/Yvtq8K3n/BobbyMcLovin/blob/742d041f5d3bd621628681c9ded0d7acde096c24/index.js#L42
-  // A Readable object mode stream of Opus packets
-  // Will only end when the voice connection is destroyed
   const guildDir = `./recordings/${guild.id}`;
   if (!fs.existsSync(guildDir)){
     fs.mkdirSync(guildDir);
