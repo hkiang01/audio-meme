@@ -63,12 +63,19 @@ client.on('interactionCreate', async interaction => {
   }
   const guildMember: GuildMember = interaction.member;
 
-  let name: string = undefined;
+  // security
+  const name: string = interaction.options.getString("name");
+  if (name) {
+    if (name.length >= 50 || !((/^[\w\-]+$/).test(name))) {
+      await interaction.reply('Invalid name, can only contain alphanumeric characters and dashes and cannot be longer than 50 characters')
+      return;
+    }
+  }
+
   let err: NodeJS.ErrnoException = undefined;
   let memeExists: boolean = undefined;
   switch (interaction.options.getSubcommand()) {
     case 'record':
-      name = interaction.options.getString("name");
       await interaction.reply(`🔴 recording ${name} from ${interaction.user.username}'s mic`);
       err = await record(interaction.guild, guildMember.voice.channel, interaction.user, name);
       if (err) {
@@ -76,7 +83,6 @@ client.on('interactionCreate', async interaction => {
       }
       break;
     case 'play':
-      name = interaction.options.getString("name");
       memeExists = !await exists(interaction.guild, name)
       if (memeExists) {
         await interaction.reply(`❌ ${name} not found`);
@@ -103,7 +109,6 @@ client.on('interactionCreate', async interaction => {
       })
       break;
     case 'delete':
-      name = interaction.options.getString("name");
       deleteMeme(interaction.guild, name).then(async (err) => {
         if (err) {
           await interaction.reply(`❌ Error deleting meme - ${err.message}`);
