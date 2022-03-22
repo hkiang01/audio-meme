@@ -1,4 +1,4 @@
-import { AudioPlayerStatus, createAudioPlayer, createAudioResource, EndBehaviorType } from '@discordjs/voice';
+import { AudioPlayerStatus, createAudioPlayer, createAudioResource, EndBehaviorType, VoiceConnectionStatus} from '@discordjs/voice';
 import { Guild, User, VoiceBasedChannel } from 'discord.js';
 import { pipeline } from 'node:stream';
 import { createWriteStream } from 'node:fs';
@@ -94,7 +94,9 @@ export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, n
   connection.subscribe(player);
   return new Promise<Error>((resolve) => {
     player.on(AudioPlayerStatus.Idle, async () => {
-      connection.destroy();
+      if (connection.state.status !== VoiceConnectionStatus.Destroyed) {
+        connection.destroy();
+      }
       resolve(undefined);
     });
   })
