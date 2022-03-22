@@ -77,12 +77,11 @@ export async function recordYoutube(guild: Guild, name: string, youtubeUrl: stri
     fs.mkdirSync(guildDir);
   }
   const filename = `${guildDir}/${name}.ogg`;
-  const stream = ytdl(youtubeUrl, {filter: 'audioonly'});
-  const out = createWriteStream(filename);
   return new Promise<Error>((resolve) => {
-    pipeline(stream, out, (err) => {
-      resolve(err);
-    });
+    ytdl(youtubeUrl, {filter: 'audioonly'})
+    .pipe(createWriteStream(filename))
+    .on('finish', () => resolve(undefined))
+    .on('error', (err) => resolve(err))
   })
 }
 

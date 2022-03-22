@@ -77,7 +77,7 @@ client.on('interactionCreate', async interaction => {
     }
   }
 
-  let err: NodeJS.ErrnoException = undefined;
+  let err: Error = undefined;
   let memeExists: boolean = undefined;
   switch (interaction.options.getSubcommand()) {
     case 'record':
@@ -89,7 +89,6 @@ client.on('interactionCreate', async interaction => {
       if (youtubeUrl) {
         await interaction.reply(`🔴 recording ${name} from ${youtubeUrl}`);
         err = await recordYoutube(interaction.guild, name, youtubeUrl);
-        return;
       } else {
         await interaction.reply(`🔴 recording ${name} from ${interaction.user.username}'s mic`);
         err = await record(interaction.guild, guildMember.voice.channel, interaction.user, name);
