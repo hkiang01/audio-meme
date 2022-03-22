@@ -67,7 +67,7 @@ client.on('interactionCreate', async interaction => {
   const name: string = interaction.options.getString("name");
   if (name) {
     if (name.length >= 50 || !((/^[\w\-]+$/).test(name))) {
-      await interaction.reply('Invalid name, can only contain alphanumeric characters and dashes and cannot be longer than 50 characters')
+      await interaction.reply({ephemeral: true, content: 'Invalid name, can only contain alphanumeric characters and dashes and cannot be longer than 50 characters'})
       return;
     }
   }
