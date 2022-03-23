@@ -52,6 +52,8 @@ spec:
           volumeMounts:
             - mountPath: /app/recordings
               name: recordings
+            - mountPath: /app/intros
+              name: intros
       volumes:
         - name: recordings
           persistentVolumeClaim:
