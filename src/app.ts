@@ -60,7 +60,8 @@ const slashCommand = new SlashCommandBuilder()
       .setName("name")
       .setDescription("The sound that will play when joining a voice channel in the guild")
       .setRequired(true)
-  ));
+    )
+  );
 
 const rest = new REST({version: '9'}).setToken(DISCORD_BOT_TOKEN);
 
