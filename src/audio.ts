@@ -1,5 +1,5 @@
 import { AudioPlayerStatus, createAudioPlayer, createAudioResource, EndBehaviorType, VoiceConnectionStatus} from '@discordjs/voice';
-import { Guild, User, VoiceBasedChannel } from 'discord.js';
+import { Guild, GuildMember, User, VoiceBasedChannel } from 'discord.js';
 import { pipeline } from 'node:stream';
 import { createWriteStream } from 'node:fs';
 import { joinVoiceChannel } from '@discordjs/voice';
@@ -94,9 +94,7 @@ export async function exists(guild: Guild, name: string): Promise<boolean> {
   })
 }
 
-export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, name: string): Promise<Error> {
-  const path = `./recordings/${guild.id}/${name}.ogg`;
-
+function _playHelper(guild: Guild, voiceBasedChannel: VoiceBasedChannel, path: string): Promise<Error> {
   const connection = joinVoiceChannel({
     channelId: voiceBasedChannel.id,
     guildId: guild.id,
@@ -116,6 +114,16 @@ export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, n
       resolve(undefined);
     });
   })
+}
+
+export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, name: string): Promise<Error> {
+  const path = `./recordings/${guild.id}/${name}.ogg`;
+  return _playHelper(guild, voiceBasedChannel, path);
+}
+
+export async function playIntro(guild: Guild, voiceBasedChannel: VoiceBasedChannel, member: GuildMember): Promise<Error> {
+  const path = `./intros/${guild.id}/${member.id}.ogg`;
+  return _playHelper(guild, voiceBasedChannel, path);
 }
 
 export async function deleteMeme(guild: Guild, name: string): Promise<Error> {

@@ -4,8 +4,9 @@ import {CLIENT_ID, DISCORD_BOT_TOKEN} from './constants';
 import { REST } from '@discordjs/rest';
 
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { deleteMeme, exists, pickRandom, play, record, recordYoutube } from './audio';
+import { deleteMeme, exists, pickRandom, play, playIntro, record, recordYoutube } from './audio';
 import { GuildMember } from 'discord.js';
+import fs from 'fs';
 
 
 const slashCommand = new SlashCommandBuilder()
@@ -50,7 +51,16 @@ const slashCommand = new SlashCommandBuilder()
     subCommand
     .setName("random")
     .setDescription("Play a random audio meme")
-  );
+  ).addSubcommand(subCommand =>
+    subCommand
+    .setName("setintro")
+    .setDescription("Set a sound to play after joining a voice channel in the guild")
+    .addStringOption(option =>
+      option
+      .setName("name")
+      .setDescription("The sound that will play when joining a voice channel in the guild")
+      .setRequired(true)
+  ));
 
 const rest = new REST({version: '9'}).setToken(DISCORD_BOT_TOKEN);
 
@@ -140,8 +150,13 @@ client.on('interactionCreate', async interaction => {
         return;
       });
       break;
+    case 'setintro':
+      fs.copyFile(`./recordings/${interaction.guild.id}/${name}.ogg`, `./intros/${interaction.guild.id}/${interaction.user.id}.ogg`, async () => {
+        await interaction.reply(`✅ Successfully set ${interaction.user.username}'s intro to ${name}`);
+      })
+      break;
     default:
-      await interaction.reply({ephemeral: true, content: 'Available subcommands: record, play, delete, random'});
+      await interaction.reply({ephemeral: true, content: 'Available subcommands: record, play, delete, random, setintro'});
       break;
   }
   return;
@@ -159,6 +174,16 @@ client.on('interactionCreate', async interaction => {
     console.error(error);
   }
 })();
+
+// intros
+client.on('voiceStateUpdate', (voiceState) => {
+  const guild = voiceState.guild;
+  const channel = voiceState.channel;
+  const member = voiceState.member;
+  fs.access(`./intros/${guild.id}/${member.id}`, async () => {
+    await playIntro(guild, channel, member);
+  })
+});
 
 // log when bot is ready
 client.on('ready', () => {
