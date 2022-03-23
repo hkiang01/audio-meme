@@ -164,9 +164,8 @@ client.on('interactionCreate', async interaction => {
 
 (async() => {
   try {
-
     // register commands
-    await rest.post(
+    await rest.put(
       Routes.applicationCommands(CLIENT_ID), {body: slashCommand}
     );
     console.log(`Successfully registered /${slashCommand.name} commands.`);
