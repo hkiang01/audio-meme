@@ -1,13 +1,27 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: audio-meme
+  name: recordings
   labels:
     app: audio-meme
 spec:
   resources:
     requests:
       storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: intros
+  labels:
+    app: audio-meme
+spec:
+  resources:
+    requests:
+      storage: 250Mi
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce

@@ -55,4 +55,7 @@ spec:
       volumes:
         - name: recordings
           persistentVolumeClaim:
-            claimName: audio-meme
+            claimName: recordings
+        - name: intros
+          persistentVolumeClaim:
+            claimName: intros

@@ -94,7 +94,16 @@ export async function exists(guild: Guild, name: string): Promise<boolean> {
   })
 }
 
-function _playHelper(guild: Guild, voiceBasedChannel: VoiceBasedChannel, path: string): Promise<Error> {
+export async function introExists(guild: Guild, member: GuildMember) {
+  const path = `./intros/${guild.id}/${member.user.id}.ogg`;
+  return new Promise((resolve) => {
+    fs.access(path, fs.constants.F_OK, (err) => {
+      resolve(!err)
+    })
+  })
+}
+
+export function _playHelper(guild: Guild, voiceBasedChannel: VoiceBasedChannel, path: string): Promise<Error> {
   const connection = joinVoiceChannel({
     channelId: voiceBasedChannel.id,
     guildId: guild.id,
@@ -121,9 +130,20 @@ export async function play(guild: Guild, voiceBasedChannel: VoiceBasedChannel, n
   return _playHelper(guild, voiceBasedChannel, path);
 }
 
-export async function playIntro(guild: Guild, voiceBasedChannel: VoiceBasedChannel, member: GuildMember): Promise<Error> {
-  const path = `./intros/${guild.id}/${member.id}.ogg`;
-  return _playHelper(guild, voiceBasedChannel, path);
+export async function playIntro(guild: Guild, voiceBasedChannel: VoiceBasedChannel, member: GuildMember, skipDelay?: boolean): Promise<Error> {
+  const path = `./intros/${guild.id}/${member.user.id}.ogg`;
+
+  if (!skipDelay) {
+    return new Promise<Error>((resolve) => {
+      setTimeout(async () => {
+        const err = await _playHelper(guild, voiceBasedChannel, path);
+        resolve(err);
+      }, 250);
+    })
+  } else {
+    return _playHelper(guild, voiceBasedChannel, path);
+  }
+
 }
 
 export async function deleteMeme(guild: Guild, name: string): Promise<Error> {

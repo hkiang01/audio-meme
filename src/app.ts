@@ -4,14 +4,14 @@ import {CLIENT_ID, DISCORD_BOT_TOKEN} from './constants';
 import { REST } from '@discordjs/rest';
 
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { deleteMeme, exists, pickRandom, play, playIntro, record, recordYoutube } from './audio';
-import { GuildMember, VoiceBasedChannel, VoiceState } from 'discord.js';
+import { deleteMeme, exists, introExists, pickRandom, play, playIntro, record, recordYoutube, _playHelper } from './audio';
+import { GuildMember, VoiceState } from 'discord.js';
 import fs from 'fs';
 
 
 const slashCommand = new SlashCommandBuilder()
   .setName("audiomeme")
-  .setDescription("cuz why not?")
+  .setDescription("Fun audio memes")
   .addSubcommand(subcommand => 
     subcommand
     .setName("record")
@@ -112,7 +112,7 @@ client.on('interactionCreate', async interaction => {
       }
       break;
     case 'play':
-      memeExists = !await exists(interaction.guild, name)
+      memeExists = await exists(interaction.guild, name)
       if (memeExists) {
         await interaction.reply(`❌ Error playing ${name} - not found`);
         break;
@@ -152,9 +152,23 @@ client.on('interactionCreate', async interaction => {
       });
       break;
     case 'setintro':
-      fs.copyFile(`./recordings/${interaction.guild.id}/${name}.ogg`, `./intros/${interaction.guild.id}/${interaction.user.id}.ogg`, async () => {
-        await interaction.reply(`✅ Successfully set ${interaction.user.username}'s intro to ${name}`);
-      })
+      if (!await exists(interaction.guild, name)) {
+        await interaction.reply(`❌ Error setting ${interaction.member.user.username}'s intro to ${name} - does not exist. Please select an existing audio meme`);
+        return;
+      }
+      await interaction.reply(`▶ playing ${name}`);
+      const guildDir = `./intros/${interaction.guild.id}`;
+      if (!fs.existsSync(guildDir)){
+        fs.mkdirSync(guildDir);
+      }
+      fs.copyFile(
+        `./recordings/${interaction.guild.id}/${name}.ogg`,
+        `./intros/${interaction.guild.id}/${interaction.user.id}.ogg`,
+        async () => {
+          await interaction.followUp(`✅ Successfully set ${interaction.user.username}'s intro to ${name}`);
+          return;
+        }
+      );
       break;
     default:
       await interaction.reply({ephemeral: true, content: 'Available subcommands: record, play, delete, random, setintro'});
@@ -176,17 +190,21 @@ client.on('interactionCreate', async interaction => {
 })();
 
 // intros
-client.on('voiceStateUpdate', (voiceState: VoiceState) => {
-  const guild = voiceState.guild;
-  const channel = voiceState.channel;
-  const member = voiceState.member;
-  if (channel) {
-    fs.access(`./intros/${guild.id}/${member.id}`, async (err) => {
-      if (!err) {
-        await playIntro(guild, channel, member);
-      }
-    })
-  }
+client.on('voiceStateUpdate', (oldState: VoiceState, newState: VoiceState) => {
+  if (newState.member.user.bot) return;
+
+  const oldChannelId = oldState.channelId;
+  const newChannelId = newState.channelId;
+  const userJoinedChannel = newChannelId && (newChannelId != oldChannelId);
+  if (!userJoinedChannel || newState.channel.type !== 'GUILD_VOICE') return;
+
+  const guild = newState.guild;
+  const member = newState.member;
+  introExists(guild, member).then(async (so) => {
+    if (so) {
+      await playIntro(guild, newState.channel, newState.member);
+    }
+  });
 });
 
 // log when bot is ready
