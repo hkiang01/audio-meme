@@ -5,7 +5,7 @@ import { REST } from '@discordjs/rest';
 
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { deleteMeme, exists, pickRandom, play, playIntro, record, recordYoutube } from './audio';
-import { GuildMember } from 'discord.js';
+import { GuildMember, VoiceBasedChannel, VoiceState } from 'discord.js';
 import fs from 'fs';
 
 
@@ -176,13 +176,17 @@ client.on('interactionCreate', async interaction => {
 })();
 
 // intros
-client.on('voiceStateUpdate', (voiceState) => {
+client.on('voiceStateUpdate', (voiceState: VoiceState) => {
   const guild = voiceState.guild;
   const channel = voiceState.channel;
   const member = voiceState.member;
-  fs.access(`./intros/${guild.id}/${member.id}`, async () => {
-    await playIntro(guild, channel, member);
-  })
+  if (channel) {
+    fs.access(`./intros/${guild.id}/${member.id}`, async (err) => {
+      if (!err) {
+        await playIntro(guild, channel, member);
+      }
+    })
+  }
 });
 
 // log when bot is ready
