@@ -156,6 +156,7 @@ client.on('interactionCreate', async interaction => {
         await interaction.reply(`❌ Error setting ${interaction.member.user.username}'s intro to ${name} - does not exist. Please select an existing audio meme`);
         return;
       }
+      await interaction.reply(`⌛ Setting ${interaction.member.user.username}'s intro to ${name}`);
       const guildDir = `./intros/${interaction.guild.id}`;
       if (!fs.existsSync(guildDir)){
         fs.mkdirSync(guildDir);
