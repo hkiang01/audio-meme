@@ -99,7 +99,7 @@ client.on('interactionCreate', async interaction => {
       await handlers.playHandler(name, interaction, guildMember);
       break;
     case 'random':
-      await handlers.randhomHandler(name, interaction, guildMember);
+      await handlers.randomHandler(interaction, guildMember);
       break;
     case 'delete':
       if (!await exists(interaction.guild, name)) {
