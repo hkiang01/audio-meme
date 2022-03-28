@@ -96,16 +96,7 @@ client.on('interactionCreate', async interaction => {
       await handlers.recordHandler(name, interaction, guildMember)
       break;
     case 'play':
-      memeExists = await exists(interaction.guild, name)
-      if (!memeExists) {
-        await interaction.reply(`❌ Error playing ${name} - not found`);
-        break;
-      }
-      await interaction.reply(`▶ playing ${name}`);
-      err = await play(interaction.guild, guildMember.voice.channel, name);
-      if (err) {
-        await interaction.reply(`❌ Error playing ${name} - ${err.message}`);
-      }
+      await handlers.playHandler(name, interaction, guildMember)
       break;
     case 'random':
       pickRandom(interaction.guild).then( async ([name, err]) => {

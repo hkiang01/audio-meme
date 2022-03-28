@@ -1,5 +1,5 @@
 import { CommandInteraction, GuildMember } from "discord.js";
-import { exists, record, recordYoutube } from "./audio";
+import { exists, play, record, recordYoutube } from "./audio";
 
 
 async function recordHandler(name: string, interaction: CommandInteraction,  guildMember: GuildMember) {
@@ -24,6 +24,20 @@ async function recordHandler(name: string, interaction: CommandInteraction,  gui
   }
 }
 
+async function playHandler(name: string, interaction: CommandInteraction, guildMember: GuildMember) {
+  const memeExists = await exists(interaction.guild, name)
+  if (!memeExists) {
+    await interaction.reply(`❌ Error playing ${name} - not found`);
+    return;
+  }
+  await interaction.reply(`▶ playing ${name}`);
+  const err = await play(interaction.guild, guildMember.voice.channel, name);
+  if (err) {
+    await interaction.reply(`❌ Error playing ${name} - ${err.message}`);
+  }
+}
+
 export const handlers = {
-  recordHandler: recordHandler
+  recordHandler: recordHandler,
+  playHandler: playHandler
 }
