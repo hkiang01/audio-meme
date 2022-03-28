@@ -66,13 +66,22 @@ const slashCommand = new SlashCommandBuilder()
 const rest = new REST({version: '9'}).setToken(DISCORD_BOT_TOKEN);
 
 client.on('interactionCreate', async interaction => {
+
+  // ensure that:
+  // i) the interaction was not issued by a bot,
+  // ii) the interaction is indeed a command,
+  // iii) the command name is the command of interest, namely, 'audiomeme',
   if (interaction.user.bot) return;
   if (!interaction.isCommand()) return;
   if (interaction.commandName !== 'audiomeme') return;
+
+  // if the command was not invoked in a {Guild}, prompt the {User} that the bot only works in a {Guild}
   if (!interaction.guild) {
     await interaction.reply({ephemeral: true, content: 'audiomeme only works in guild text channels'});
     return;
   }
+
+  // if the command was invoked when the {User} is not in a {VoiceBasedChannel}, prompt them to join one
   if (!(interaction.member instanceof GuildMember) || !interaction.member.voice.channel) {
     await interaction.reply({ephemeral: true, content: 'Join a voice channel and try again'});
     return;
@@ -88,6 +97,7 @@ client.on('interactionCreate', async interaction => {
     }
   }
 
+  // handle the relevant subcommand, see {slashCommand}
   switch (interaction.options.getSubcommand()) {
     case 'record':
       await handlers.recordHandler(name, interaction, guildMember);
