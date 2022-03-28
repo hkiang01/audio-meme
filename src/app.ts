@@ -93,7 +93,7 @@ client.on('interactionCreate', async interaction => {
   let memeExists: boolean = undefined;
   switch (interaction.options.getSubcommand()) {
     case 'record':
-      handlers.recordHandler(name, interaction, guildMember)
+      await handlers.recordHandler(name, interaction, guildMember)
       break;
     case 'play':
       memeExists = await exists(interaction.guild, name)
