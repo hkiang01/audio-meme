@@ -1,5 +1,5 @@
 import { CommandInteraction, GuildMember } from "discord.js";
-import { exists, play, record, recordYoutube } from "./audio";
+import { exists, pickRandom, play, record, recordYoutube } from "./audio";
 
 
 async function recordHandler(name: string, interaction: CommandInteraction,  guildMember: GuildMember) {
@@ -37,7 +37,23 @@ async function playHandler(name: string, interaction: CommandInteraction, guildM
   }
 }
 
+async function randhomHandler(name: string, interaction: CommandInteraction, guildMember: GuildMember) {
+  pickRandom(interaction.guild).then( async ([name, err]) => {
+    if (err) {
+      await interaction.reply(`❌ Error picking random meme - ${err.message}`);
+      return;
+    }
+    await interaction.reply(`▶ playing ${name}`);
+    err = await play(interaction.guild, guildMember.voice.channel, name);
+    if (err) {
+      await interaction.reply(`❌ Error playing ${name} - ${err.message}`);
+      return;
+    }
+  })
+}
+
 export const handlers = {
   recordHandler: recordHandler,
-  playHandler: playHandler
+  playHandler: playHandler,
+  randhomHandler: randhomHandler
 }

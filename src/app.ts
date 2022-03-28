@@ -93,24 +93,13 @@ client.on('interactionCreate', async interaction => {
   let memeExists: boolean = undefined;
   switch (interaction.options.getSubcommand()) {
     case 'record':
-      await handlers.recordHandler(name, interaction, guildMember)
+      await handlers.recordHandler(name, interaction, guildMember);
       break;
     case 'play':
-      await handlers.playHandler(name, interaction, guildMember)
+      await handlers.playHandler(name, interaction, guildMember);
       break;
     case 'random':
-      pickRandom(interaction.guild).then( async ([name, err]) => {
-        if (err) {
-          await interaction.reply(`❌ Error picking random meme - ${err.message}`);
-          return;
-        }
-        await interaction.reply(`▶ playing ${name}`);
-        err = await play(interaction.guild, guildMember.voice.channel, name);
-        if (err) {
-          await interaction.reply(`❌ Error playing ${name} - ${err.message}`);
-          return;
-        }
-      })
+      await handlers.randhomHandler(name, interaction, guildMember);
       break;
     case 'delete':
       if (!await exists(interaction.guild, name)) {
