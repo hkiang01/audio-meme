@@ -7,6 +7,7 @@ import { SlashCommandBuilder } from '@discordjs/builders';
 import { deleteMeme, exists, introExists, pickRandom, play, playIntro, record, recordYoutube, _playHelper } from './audio';
 import { GuildMember, VoiceState } from 'discord.js';
 import fs from 'fs';
+import { handlers } from './handlers';
 
 
 const slashCommand = new SlashCommandBuilder()
@@ -92,24 +93,7 @@ client.on('interactionCreate', async interaction => {
   let memeExists: boolean = undefined;
   switch (interaction.options.getSubcommand()) {
     case 'record':
-      if (await exists(interaction.guild, name)) {
-        await interaction.reply(`❌ Error recording ${name} - ${name} exists. Please delete and re-record`);
-        return;
-      }
-      const youtubeUrl = interaction.options.getString('youtubeurl');
-      if (youtubeUrl) {
-        await interaction.reply(`🔴 recording ${name} from ${youtubeUrl}`);
-        err = await recordYoutube(interaction.guild, name, youtubeUrl);
-      } else {
-        await interaction.reply(`🔴 recording ${name} from ${interaction.user.username}'s mic`);
-        err = await record(interaction.guild, guildMember.voice.channel, interaction.user, name);
-      }
-      if (err) {
-        await interaction.followUp(`❌ Error recording ${name} - ${err.message}`);
-        return;
-      } else {
-        await interaction.followUp(`✅ Successfully recorded ${name}`);
-      }
+      handlers.recordHandler(name, interaction, guildMember)
       break;
     case 'play':
       memeExists = await exists(interaction.guild, name)
