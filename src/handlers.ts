@@ -1,5 +1,6 @@
 import { CommandInteraction, GuildMember } from "discord.js";
 import { deleteMeme, exists, pickRandom, play, record, recordYoutube } from "./audio";
+import fs from 'fs';
 
 
 async function recordHandler(name: string, interaction: CommandInteraction,  guildMember: GuildMember) {
@@ -50,7 +51,7 @@ async function randomHandler(interaction: CommandInteraction, guildMember: Guild
   }
 }
 
-async function deleteHandler(name: string, interaction: CommandInteraction, guildMember: GuildMember) {
+async function deleteHandler(name: string, interaction: CommandInteraction) {
   if (!await exists(interaction.guild, name)) {
     await interaction.reply(`❌ Error deleting ${name} - does not exist, already deleted`);
     return;
@@ -65,10 +66,31 @@ async function deleteHandler(name: string, interaction: CommandInteraction, guil
   });
 }
 
+async function setIntroHandler(name: string, interaction: CommandInteraction) {
+  if (!await exists(interaction.guild, name)) {
+    await interaction.reply(`❌ Error setting ${interaction.member.user.username}'s intro to ${name} - does not exist. Please select an existing audio meme`);
+    return;
+  }
+  await interaction.reply(`⌛ Setting ${interaction.member.user.username}'s intro to ${name}`);
+  const guildDir = `./intros/${interaction.guild.id}`;
+  if (!fs.existsSync(guildDir)){
+    fs.mkdirSync(guildDir);
+  }
+  fs.copyFile(
+    `./recordings/${interaction.guild.id}/${name}.ogg`,
+    `./intros/${interaction.guild.id}/${interaction.user.id}.ogg`,
+    async () => {
+      await interaction.followUp(`✅ Successfully set ${interaction.user.username}'s intro to ${name}`);
+      return;
+    }
+  );
+}
+
 
 export const handlers = {
   recordHandler: recordHandler,
   playHandler: playHandler,
   randomHandler: randomHandler,
-  deleteHandler: deleteHandler
+  deleteHandler: deleteHandler,
+  setIntroHandler: setIntroHandler
 }

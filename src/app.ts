@@ -4,9 +4,8 @@ import {CLIENT_ID, DISCORD_BOT_TOKEN} from './constants';
 import { REST } from '@discordjs/rest';
 
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { deleteMeme, exists, introExists, pickRandom, play, playIntro, record, recordYoutube, _playHelper } from './audio';
+import { exists, introExists, playIntro, _playHelper } from './audio';
 import { GuildMember, VoiceState } from 'discord.js';
-import fs from 'fs';
 import { handlers } from './handlers';
 
 
@@ -100,26 +99,10 @@ client.on('interactionCreate', async interaction => {
       await handlers.randomHandler(interaction, guildMember);
       break;
     case 'delete':
-      await handlers.deleteHandler(name, interaction, guildMember);
+      await handlers.deleteHandler(name, interaction);
       break;
     case 'setintro':
-      if (!await exists(interaction.guild, name)) {
-        await interaction.reply(`❌ Error setting ${interaction.member.user.username}'s intro to ${name} - does not exist. Please select an existing audio meme`);
-        return;
-      }
-      await interaction.reply(`⌛ Setting ${interaction.member.user.username}'s intro to ${name}`);
-      const guildDir = `./intros/${interaction.guild.id}`;
-      if (!fs.existsSync(guildDir)){
-        fs.mkdirSync(guildDir);
-      }
-      fs.copyFile(
-        `./recordings/${interaction.guild.id}/${name}.ogg`,
-        `./intros/${interaction.guild.id}/${interaction.user.id}.ogg`,
-        async () => {
-          await interaction.followUp(`✅ Successfully set ${interaction.user.username}'s intro to ${name}`);
-          return;
-        }
-      );
+      await handlers.setIntroHandler(name, interaction);
       break;
     default:
       await interaction.reply({ephemeral: true, content: 'Available subcommands: record, play, delete, random, setintro'});
