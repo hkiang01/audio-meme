@@ -102,18 +102,7 @@ client.on('interactionCreate', async interaction => {
       await handlers.randomHandler(interaction, guildMember);
       break;
     case 'delete':
-      if (!await exists(interaction.guild, name)) {
-        await interaction.reply(`❌ Error deleting ${name} - does not exist, already deleted`);
-        return;
-      }
-      deleteMeme(interaction.guild, name).then(async (err) => {
-        if (err) {
-          await interaction.reply(`❌ Error deleting ${name} - ${err.message}`);
-          return;
-        }
-        await interaction.reply(`🗑️ deleted ${name}`);
-        return;
-      });
+      await handlers.deleteHandler(name, interaction, guildMember);
       break;
     case 'setintro':
       if (!await exists(interaction.guild, name)) {

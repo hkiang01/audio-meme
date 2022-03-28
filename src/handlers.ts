@@ -1,5 +1,5 @@
 import { CommandInteraction, GuildMember } from "discord.js";
-import { exists, pickRandom, play, record, recordYoutube } from "./audio";
+import { deleteMeme, exists, pickRandom, play, record, recordYoutube } from "./audio";
 
 
 async function recordHandler(name: string, interaction: CommandInteraction,  guildMember: GuildMember) {
@@ -50,8 +50,25 @@ async function randomHandler(interaction: CommandInteraction, guildMember: Guild
   }
 }
 
+async function deleteHandler(name: string, interaction: CommandInteraction, guildMember: GuildMember) {
+  if (!await exists(interaction.guild, name)) {
+    await interaction.reply(`❌ Error deleting ${name} - does not exist, already deleted`);
+    return;
+  }
+  deleteMeme(interaction.guild, name).then(async (err) => {
+    if (err) {
+      await interaction.reply(`❌ Error deleting ${name} - ${err.message}`);
+      return;
+    }
+    await interaction.reply(`🗑️ deleted ${name}`);
+    return;
+  });
+}
+
+
 export const handlers = {
   recordHandler: recordHandler,
   playHandler: playHandler,
-  randomHandler: randomHandler
+  randomHandler: randomHandler,
+  deleteHandler: deleteHandler
 }
