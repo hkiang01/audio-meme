@@ -4,7 +4,7 @@ import {CLIENT_ID, DISCORD_BOT_TOKEN} from './constants';
 import { REST } from '@discordjs/rest';
 
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { exists, introExists, playIntro, _playHelper } from './audio';
+import { introExists, playIntro, _playHelper } from './audio';
 import { GuildMember, VoiceState } from 'discord.js';
 import { handlers } from './handlers';
 
