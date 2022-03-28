@@ -135,13 +135,17 @@ client.on('interactionCreate', async interaction => {
 
 // intros
 client.on('voiceStateUpdate', (oldState: VoiceState, newState: VoiceState) => {
+  // prevent infinite loops by exiting if the event was prompted by a bot
   if (newState.member.user.bot) return;
 
+  // determine whether the event was prompted by a {User} joining a {VoiceBasedChannel}
+  // and if not, exits
   const oldChannelId = oldState.channelId;
   const newChannelId = newState.channelId;
   const userJoinedChannel = newChannelId && (newChannelId != oldChannelId);
   if (!userJoinedChannel || newState.channel.type !== 'GUILD_VOICE') return;
 
+  // if an intro exists for that user, then play it
   const guild = newState.guild;
   const member = newState.member;
   introExists(guild, member).then(async (so) => {
